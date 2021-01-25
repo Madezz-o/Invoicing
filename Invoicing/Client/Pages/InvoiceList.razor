@@ -1,0 +1,66 @@
+﻿@page "/invoices"
+
+@inject HttpClient http
+
+<h1>Invoices</h1>
+
+@if (allInvoices == null)
+{
+    <p>Interrogation du serveur...</p>
+}
+else
+{
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Reference</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Paid</th>
+                <th>CA</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var invoice in allInvoices)
+            {
+                <tr class='table-@ColorFromInvoiceState(invoice)'>
+                    <td>@invoice.Reference</td>
+                    <td>@invoice.Created.ToShortDateString()</td>
+                    <td>@invoice.Customer</td>
+                    <td align="right">@invoice.Amount</td>
+                    <td align="right">@invoice.Paid</td>
+                    <td>@invoice.CAffaire</td>
+                </tr>
+
+            }
+        </tbody>
+    </table>
+}
+@code {
+
+    static string ColorFromInvoiceState(Invoice invoice)
+    {
+        if (invoice.IsLate)
+        {
+            return "danger";
+        }
+        else if (invoice.IsPaid)
+        {
+            return "success";
+        }
+        else
+        {
+            return "default";
+        }
+    }
+
+    private IEnumerable<Invoice> allInvoices = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        allInvoices = await http.GetFromJsonAsync<IEnumerable<Invoice>>("api/Invoices");
+    }
+}
+

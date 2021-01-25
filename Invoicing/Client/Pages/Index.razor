@@ -1,0 +1,103 @@
+﻿@page "/"
+
+@using Invoicing.Shared
+
+@inject HttpClient http
+
+
+
+
+@if (factures != null)
+{
+    <h1>Your activity</h1>
+
+    <h2>Chiffre d'affaire attendu : <strong>@caAttendu()</strong></h2>
+
+    <h2>Chiffre d'affaire : <strong>@caReel()</strong></h2>
+
+    <h2>Chiffre d'affaire : <strong>@ChiffreAff</strong></h2>////(calcul via BDD)
+
+
+
+<form action="api/invoices" method="post">
+    <div>
+        <label for="Reference">Numéro</label>
+        <input type"text" />
+    </div>
+
+    <div>
+        <label for="Customer">Client</label>
+        <input type"text" />
+    </div>
+
+    <div>
+        <label for="Created">Date de Reglement</label>
+        <input type"DateTime" />
+    </div>
+
+    <div>
+        <label for="MontantDu">Montant Du</label>
+        <input type"float" />
+    </div>
+
+    <div>
+        <label for="Paid">Montant Réglé</label>
+        <input type"float" />
+    </div>
+
+
+    <div>
+        <button type="submit">Créé Facture</button>
+    </div>
+</form>
+
+}
+
+
+
+
+@code {
+    double CAAttendu = 0;
+    double CAReel = 0;
+    double ChiffreAff = 0;
+
+    private IEnumerable<Invoice> factures = null;
+
+    private double caAttendu()
+    {
+        foreach (var facture in factures)
+        {
+            CAAttendu += facture.Amount;
+        }
+        return CAAttendu;
+    }
+
+    private double caReel()
+    {
+        foreach (var facture in factures)
+        {
+            CAReel += facture.Paid;
+        }
+        return CAReel;
+    }
+
+    private double ChiffreA() //On ne veut plus faire le calcul du CA ici mais avant et récupérer le CA directement de la BDD
+    {
+        foreach (var facture in factures)
+        {
+            ChiffreAff = facture.CAffaire;
+        }
+        return ChiffreAff;
+    }
+
+
+
+
+   
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        factures = await http.GetFromJsonAsync<IEnumerable<Invoice>>("api/Invoices");
+    }
+}
